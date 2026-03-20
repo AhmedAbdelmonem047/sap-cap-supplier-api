@@ -14,22 +14,6 @@ export default class CatlogService extends cds.ApplicationService {
             }
         });
 
-        // ********** Supplies Validation ********** //
-        this.before(['CREATE', 'UPDATE'], 'Suppliers', (req: Request) => {
-            const { rating } = req.data;
-            if (rating !== undefined && (rating < 1 || rating > 5)) {
-                req.error(400, 'Supplier rating must be between 1 and 5');
-            }
-        });
-
-        // ********** Reviews Validation ********** //
-        this.before(['CREATE', 'UPDATE'], 'ProductReviews', (req: Request) => {
-            const { rating } = req.data;
-            if (rating !== undefined && (rating < 1 || rating > 5)) {
-                req.error(400, 'Product review rating must be between 1 and 5');
-            }
-        });
-
         // ******* External API Integration ******* //
         this.before('CREATE', 'Products', async (req: Request) => {
             const { category } = req.data;
@@ -62,6 +46,9 @@ export default class CatlogService extends cds.ApplicationService {
             if (rating === undefined || rating < 1 || rating > 5)
                 return req.error(400, 'Rating must be between 1 and 5');
 
+            if (!comment || comment.trim().length === 0)
+                return req.error(400, 'Comment is required and cannot be empty');
+
             // 2) Creating a new tranasction to ensure atomicity (all or nothing)
             const tx = cds.tx(req);
 
@@ -83,8 +70,8 @@ export default class CatlogService extends cds.ApplicationService {
             // 5) Calculate the new average and update it
             const { averageRating } = await tx.run(
                 SELECT.one.from(ProductReviews)
-                .columns('avg(rating) as averageRating')
-                .where({ product_ID: productID })
+                    .columns('avg(rating) as averageRating')
+                    .where({ product_ID: productID })
             ) as any || { averageRating: 0 };
 
             const newAvg = averageRating ? Number(Number(averageRating).toFixed(1)) : 0;

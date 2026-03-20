@@ -7,8 +7,8 @@ using {
 
 entity Suppliers : cuid, managed {
     name     : String(100) not null;
-    email    : String(100) not null;
-    rating   : Integer;
+    email    : String(100) not null @assert.format:'^[^@]+@[^@]+\.[^@]+$';
+    rating   : Integer              @assert.range: [1, 5];
     products : Association to many Products
                    on products.supplier = $self;
 }
@@ -18,7 +18,7 @@ entity Products : cuid, managed {
     price          : Decimal(9, 2) not null;
     category       : String(50) not null;
     externalRating : Decimal(3, 1);
-    averageRating  : Decimal(3, 1);
+    averageRating  : Decimal(3, 1) default 0;
     supplier       : Association to Suppliers not null;
     reviews        : Association to many ProductReviews
                          on reviews.product = $self;
@@ -26,7 +26,7 @@ entity Products : cuid, managed {
 
 entity ProductReviews : cuid, managed {
     product  : Association to Products not null;
-    rating   : Integer not null;
+    rating   : Integer not null @assert.range: [1, 5];
     comment  : String(1000) not null;
     reviewer : String(100) not null;
 }
