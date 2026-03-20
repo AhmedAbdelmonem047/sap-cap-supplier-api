@@ -1,0 +1,40 @@
+{
+  "name": "supplier-product-management",
+  "description": "Supplier Product Management API",
+  "scripts": {
+    "start": "cds run",
+    "build": "cds build",
+    "watch": "cds-tsx w",
+    "test": "jest"
+  },
+  "cds": {
+    "requires": {
+      "db": "sqlite",
+      "auth": "mocked"
+    }
+  },
+  "imports": {
+    "#cds-models/*": "./@cds-models/*/index.js"
+  },
+  "dependencies": {
+    "@sap/xssec": "^4.13.0",
+    "axios": "^1.13.6",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "passport": "^0.7.0"
+  },
+  "devDependencies": {
+    "@cap-js/cds-typer": ">=0.1",
+    "@cap-js/cds-types": "^0.16.0",
+    "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.0.0",
+    "chai": "^6.2.2",
+    "chai-as-promised": "^8.0.2",
+    "chai-subset": "^1.6.0",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.6",
+    "tsx": "^4",
+    "typescript": "^5"
+  }
+}

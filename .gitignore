@@ -1,0 +1,19 @@
+node_modules/
+@cds-models/
+
+# TypeScript & Build Output
+dist/
+gen/
+*.tsbuildinfo
+mta_archives/
+
+# Environment and Data
+default-env.json
+.env
+*.db
+
+# Test Coverage
+coverage/
+
+# Misc
+.DS_Store
