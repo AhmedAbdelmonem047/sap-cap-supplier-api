@@ -35,6 +35,7 @@
     "jest": "^30.3.0",
     "ts-jest": "^29.4.6",
     "tsx": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@cap-js/sqlite": "^2"
   }
 }
