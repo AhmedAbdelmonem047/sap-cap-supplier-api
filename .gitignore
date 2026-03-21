@@ -12,6 +12,11 @@ default-env.json
 .env
 *.db
 
+# SQLite Database Files
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
 # Test Coverage
 coverage/
 

@@ -17,6 +17,15 @@
       "#cds-models/*": [
         "./@cds-models/*"
       ]
-    }
-  }
+    },
+    "types": [
+      "jest",
+      "node"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "eslint.config.mjs",
+    "jest.config.js"
+  ]
 }

@@ -3,7 +3,7 @@ import axios from "axios";
 
 const LOG = cds.log('CatalogService');
 
-export default class CatlogService extends cds.ApplicationService {
+export default class CatalogService extends cds.ApplicationService {
     async init() {
         const { Products, ProductReviews } = this.entities;
 
@@ -23,17 +23,17 @@ export default class CatlogService extends cds.ApplicationService {
                 try {
                     LOG.info('Fetching cateory rating from external API for: ', category);
                     // 2) Fetch products using axios
-                    const response = await axios.get('https://fakestoreapi.com/products');
+                    const response = await axios.get('https://fakestoreapi.com/products', { timeout: 5000 });
                     const products = response.data;
 
                     // 3) Find the first product that matches the category and extract its rating and assign it to the new product being created
-                    const matchedProduct = products.find((p: any) => p.category === category);
-                    if (matchedProduct && matchedProduct.rating && matchedProduct.rating.rate) {
+                    const matchedProduct = products.find((p: any) => p.category?.toLowerCase().trim() === category?.toLowerCase().trim());
+                    if (matchedProduct?.rating?.rate) {
                         req.data.externalRating = matchedProduct.rating.rate;
                         LOG.debug('Successfully inserted external rating ', matchedProduct.rating.rate, ' into product');
                     }
                 } catch (error) {
-                    LOG.error('Failed to fetch from external API, ignoring error and contiuing to maintain product creation.', error);
+                    LOG.error('Failed to fetch from external API, ignoring error and contiuing to maintain product creation.', error?.toString());
                 }
             }
         });
