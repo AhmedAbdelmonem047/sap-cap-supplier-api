@@ -1,6 +1,7 @@
 import cds, { Request } from "@sap/cds";
 import axios from "axios";
 
+const LOG = cds.log('CatalogService');
 
 export default class CatlogService extends cds.ApplicationService {
     async init() {
@@ -20,17 +21,19 @@ export default class CatlogService extends cds.ApplicationService {
             // 1) Only attempt external api integration if category exists
             if (category) {
                 try {
+                    LOG.info('Fetching cateory rating from external API for: ', category);
                     // 2) Fetch products using axios
                     const response = await axios.get('https://fakestoreapi.com/products');
                     const products = response.data;
 
                     // 3) Find the first product that matches the category and extract its rating and assign it to the new product being created
                     const matchedProduct = products.find((p: any) => p.category === category);
-                    if (matchedProduct && matchedProduct.rating && matchedProduct.rating.rate)
+                    if (matchedProduct && matchedProduct.rating && matchedProduct.rating.rate) {
                         req.data.externalRating = matchedProduct.rating.rate;
-
+                        LOG.debug('Successfully inserted external rating ', matchedProduct.rating.rate, ' into product');
+                    }
                 } catch (error) {
-                    console.warn('Failed to fetch from external API, ignoring error to maintain creation.', error);
+                    LOG.error('Failed to fetch from external API, ignoring error and contiuing to maintain product creation.', error);
                 }
             }
         });
@@ -54,8 +57,10 @@ export default class CatlogService extends cds.ApplicationService {
 
             // 3) Fetch the product to ensure it exists
             const existingProduct = await tx.run(SELECT.one.from(Products).where({ ID: productID }));
-            if (!existingProduct)
+            if (!existingProduct) {
+                LOG.warn(`Attempted to submit a review for non-existent product ID: ${productID}`);
                 return req.error(404, `Product with ID ${productID} not found`);
+            }
 
             // 4) Create a new review entry and insert it into ProductReviews
             const newReview = {
@@ -76,7 +81,12 @@ export default class CatlogService extends cds.ApplicationService {
 
             const newAvg = averageRating ? Number(Number(averageRating).toFixed(1)) : 0;
 
-            await tx.run(UPDATE(Products, productID).with({ averageRating: newAvg }));
+            const updatedRows = await tx.run(UPDATE(Products, productID).with({ averageRating: newAvg }));
+
+            if (updatedRows === 0)
+                LOG.error("UPDATE query matched 0 rows for productID:", productID);
+            else
+                LOG.info(`Successfully updated averageRating to ${newAvg} for Product ${productID} by user ${req.user?.id || 'anonymous'}`);
 
             return newReview;
         });

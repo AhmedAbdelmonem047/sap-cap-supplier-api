@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const express = require('express');
 
 const SECRET_KEY = 'super-secret-key';
+const LOG = cds.log('server');
 
 cds.on('bootstrap', async (app) => {
     app.use(express.json());
@@ -17,7 +18,9 @@ cds.on('bootstrap', async (app) => {
                     id: decoded.username,
                     roles: decoded.roles || []
                 });
+                LOG.debug('User authenticated', decoded.username);
             } catch (err) {
+                LOG.warn('Invalid or expired JWT provided', err.message);
                 return res.status(401).json({ error: 'Invalid or expired JWT' });
             }
         }
@@ -33,8 +36,10 @@ cds.on('bootstrap', async (app) => {
                 SECRET_KEY,
                 { expiresIn: '1h' }
             );
+            LOG.info(`User ${username} logged in successfully.`);
             res.status(200).json({ token });
         } else {
+            LOG.warn(`Failed login for username: ${username}`);
             res.status(401).json({ error: 'Invalid credentials. Use password "admin"' });
         }
     });
