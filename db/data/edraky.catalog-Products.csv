@@ -1,0 +1,5 @@
+ID;name;price;category;externalRating;averageRating;supplier_ID
+11111111-2222-3333-4444-555555555555;Wireless Mouse;29.99;electronics;4.5;4.0;d7f8d6c1-90a1-43e5-8a21-abcdef123456
+22222222-3333-4444-5555-666666666666;Mechanical RGB Keyboard;89.99;electronics;4.8;5.0;d7f8d6c1-90a1-43e5-8a21-abcdef123456
+33333333-4444-5555-6666-777777777777;Ergonomic Office Chair;199.99;furniture;4.2;3.0;8c5f2b1d-72e9-46c5-a4b3-c1d2e3f4g5h6
+44444444-5555-6666-7777-888888888888;USB-C Hub;45.00;electronics;4.1;0.0;a1b2c3d4-e5f6-7890-1234-56789abcdef0
