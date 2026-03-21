@@ -1,5 +1,6 @@
 using edraky.catalog as db from '../db/schema';
 
+@requires:'admin'
 service CatalogService {
 
     entity Supplier      as projection on db.Suppliers;
