@@ -90,7 +90,6 @@ describe('Catalog Service Data Model & Validation Tests', () => {
 
         expect.assertions(2);
         try {
-            // Attempt to update price to -5
             await PATCH(`/odata/v4/catalog/Products(${newProd.ID})`, {
                 price: -10
             }, { headers: getHeaders() });
