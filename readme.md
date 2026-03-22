@@ -54,48 +54,34 @@ npm run test
 
 ## Sample API Calls
 
-Below are `curl` requests covering the primary requirements. Note: The authorization header below uses basic auth (`admin:admin`).
+> **Authentication:** First, obtain a JWT token by calling the login endpoint with any username and `admin` as the password. Then include the token in the `Authorization` header as `Bearer <token>` for all subsequent API calls.
+>
+> **Browser / Fiori UI:** When accessing the Fiori Elements UI preview in a browser, use any username and `admin` as the password in the Basic Auth popup.
 
-### 1. Create a Supplier
-```bash
-curl -X POST http://localhost:4004/odata/v4/catalog/Suppliers \
-  -H "Authorization: Basic YWRtaW46YWRtaW4=" \
-  -H "Content-Type: application/json" \
-  -d '{ 
-    "name": "Acme Supplier", 
-    "email": "contact@acme.example.com", 
-    "rating": 4 
-  }'
+```
+POST /api/login
+{ "username": "ahmed", "password": "admin" }
 ```
 
-### 2. Create a Product
-```bash
-# First, you might need a supplier ID (UUID). Let's assume you've fetched or created one.
-curl -X POST http://localhost:4004/odata/v4/catalog/Products \
-  -H "Authorization: Basic YWRtaW46YWRtaW4=" \
-  -H "Content-Type: application/json" \
-  -d '{ 
-    "name": "Mens Casual T-Shirt", 
-    "price": 29.99, 
-    "category": "men'\''s clothing", 
-    "supplier_ID": "e0a6dffe-3b95-46f4-b91c-84092b71abce" 
-  }'
+### Create a Supplier
+```
+POST /odata/v4/catalog/Suppliers
+{ "name": "Acme Supplier", "email": "contact@acme.example.com", "rating": 4 }
 ```
 
-### 3. List all Products
-```bash
-curl -X GET http://localhost:4004/odata/v4/catalog/Products \
-  -H "Authorization: Basic YWRtaW46YWRtaW4="
+### Create a Product
+```
+POST /odata/v4/catalog/Products
+{ "name": "T-Shirt", "price": 29.99, "category": "clothing", "supplier_ID": "..." }
 ```
 
-### 4. Submit a Review (Custom Action)
-```bash
-curl -X POST http://localhost:4004/odata/v4/catalog/submitReview \
-  -H "Authorization: Basic YWRtaW46YWRtaW4=" \
-  -H "Content-Type: application/json" \
-  -d '{ 
-    "productID": "e1f13aab-61d0-42ba-823b-0937a0bc0f1c", 
-    "rating": 5, 
-    "comment": "Excellent quality for the price!" 
-  }'
+### List all Products
+```
+GET /odata/v4/catalog/Products
+```
+
+### Submit a Review
+```
+POST /odata/v4/catalog/submitReview
+{ "productID": "...", "rating": 4, "comment": "Good quality" }
 ```
