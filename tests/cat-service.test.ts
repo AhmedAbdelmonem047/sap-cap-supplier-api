@@ -52,7 +52,6 @@ describe('Catalog Service Data Model & Validation Tests', () => {
         }
     });
 
-
     // 3) Validation tests for Product price
     it('should validate product price (invalid)', async () => {
         expect.assertions(2);
@@ -65,7 +64,6 @@ describe('Catalog Service Data Model & Validation Tests', () => {
             expect(err.response?.data?.error?.message).toContain('greater than 0');
         }
     }, 10000);
-
 
     // 4) Edge case validation for price exactly zero
     it('should validate product price exactly zero (invalid)', async () => {
@@ -80,10 +78,9 @@ describe('Catalog Service Data Model & Validation Tests', () => {
         }
     });
 
-
     // 5) Validation on UPDATE to ensure price cannot be set to invalid value after creation
     it('should validate product price on UPDATE (invalid)', async () => {
-        // Create valid product first
+        // Create Test Product first
         const { data: newProd } = await POST('/odata/v4/catalog/Products', {
             name: 'Test Product', price: 50, category: 'electronics', supplier_ID: supplierId
         }, { headers: getHeaders() });
@@ -97,5 +94,143 @@ describe('Catalog Service Data Model & Validation Tests', () => {
             expect(err.response?.status).toBe(400);
             expect(err.response?.data?.error?.message).toContain('greater than 0');
         }
+    });
+
+    // 6) Test to ensure that if the external API fails, product creation still succeeds
+    it('should fallback gracefully on external API failure and create product', async () => {
+        const { status, data } = await POST('/odata/v4/catalog/Products', {
+            name: 'Test Product', price: 99.99, category: 'electronics', supplier_ID: supplierId
+        }, { headers: getHeaders() });
+        
+        expect(status).toBe(201);
+        expect(data.name).toBe('Test Product');
+    });
+
+    // 7) Tests for submitReview action with missing prodcutID
+    it('should fail submitReview if productID is completely missing', async () => {
+        try {
+            await POST('/odata/v4/catalog/submitReview', {
+                rating: 4, comment: 'Nice!'
+            }, { headers: getHeaders() });
+        } catch (err: any) {
+            expect(err.response?.status).toBe(400);
+            expect(err.response?.data?.error?.message).toContain('productID is required');
+        }
+    });
+
+    // 8) Tests for submitReview action with non-existent productID
+    it('should fail submitReview if product does not exist', async () => {
+        expect.assertions(2);
+        try {
+            await POST('/odata/v4/catalog/submitReview', {
+                productID: '00000000-0000-0000-0000-000000000000', rating: 4, comment: 'Nice!'
+            }, { headers: getHeaders() });
+        } catch (err: any) {
+            expect(err.response?.status).toBe(404);
+            expect(err.response?.data?.error?.message).toContain('not found');
+        }
+    });
+
+    // 9) Tests for submitReview action with invalid rating values (too high and too low)
+    it('should fail submitReview if rating is invalid (too high or too low)', async () => {
+        // First create a real product to review
+        const { data: newProd } = await POST('/odata/v4/catalog/Products', {
+            name: 'Test Product', price: 10, category: 'test', supplier_ID: supplierId
+        }, { headers: getHeaders() });
+
+        const prodId = newProd.ID;
+
+        expect.assertions(4);
+        try {
+            await POST('/odata/v4/catalog/submitReview', {
+                productID: prodId, rating: 6, comment: 'Nice!'
+            }, { headers: getHeaders() });
+        } catch (err: any) {
+            expect(err.response?.status).toBe(400);
+            expect(err.response?.data?.error?.message).toContain('between 1 and 5');
+        }
+
+        try {
+            await POST('/odata/v4/catalog/submitReview', {
+                productID: prodId, rating: 0, comment: 'Nice!'
+            }, { headers: getHeaders() });
+        } catch (err: any) {
+            expect(err.response?.status).toBe(400);
+            expect(err.response?.data?.error?.message).toContain('between 1 and 5');
+        }
+    });
+
+    // 10) Tests for submitReview action with missing or empty comment
+    it('should fail submitReview if comment is missing or empty', async () => {
+        // First create a real product to review
+        const { data: newProd } = await POST('/odata/v4/catalog/Products', {
+            name: 'Test Product', price: 10, category: 'test', supplier_ID: supplierId
+        }, { headers: getHeaders() });
+
+        const prodId = newProd.ID;
+
+        expect.assertions(4);
+        try {
+            await POST('/odata/v4/catalog/submitReview', {
+                productID: prodId, rating: 4, comment: ''
+            }, { headers: getHeaders() });
+        } catch (err: any) {
+            expect(err.response?.status).toBe(400);
+            expect(err.response?.data?.error?.message).toContain('cannot be empty');
+        }
+
+        try {
+            await POST('/odata/v4/catalog/submitReview', {
+                productID: prodId, rating: 4, comment: '   '
+            }, { headers: getHeaders() });
+        } catch (err: any) {
+            expect(err.response?.status).toBe(400);
+            expect(err.response?.data?.error?.message).toContain('cannot be empty');
+        }
+    });
+
+    // 11) Tests for submitReview action for successful review submission and averageRating update
+    it('should successfully submitReview and update average return', async () => {
+        // Create a real product to review
+        const { data: newProd } = await POST('/odata/v4/catalog/Products', {
+            name: 'Test Product', price: 10, category: 'test', supplier_ID: supplierId
+        }, { headers: getHeaders() });
+
+        const prodId = newProd.ID;
+
+        // Submit review
+        const { status, data: reviewResponse } = await POST('/odata/v4/catalog/submitReview', {
+            productID: prodId, rating: 5, comment: 'Amazing!'
+        }, { headers: getHeaders() });
+
+        expect(status).toBe(200);
+
+        // Fetch product again to check if averageRating updated
+        const { data: verifiedProd } = await GET(`/odata/v4/catalog/Products(${prodId})`, { headers: getHeaders() });
+        expect(verifiedProd.averageRating).toBe(5);
+    });
+
+    // 12) Tests for submitReview action to ensure averageRating is correctly recalculated when there are multiple reviews
+    it('should correctly recalculate averageRating when multiple reviews are submitted', async () => {
+        // Create product
+        const { data: newProd } = await POST('/odata/v4/catalog/Products', {
+            name: 'Multi-Review Product', price: 20, category: 'test', supplier_ID: supplierId
+        }, { headers: getHeaders() });
+
+        const prodId = newProd.ID;
+
+        // Submit first review (Rating: 5)
+        await POST('/odata/v4/catalog/submitReview', {
+            productID: prodId, rating: 5, comment: 'Excellent!'
+        }, { headers: getHeaders() });
+
+        // Submit second review (Rating: 3)
+        await POST('/odata/v4/catalog/submitReview', {
+            productID: prodId, rating: 3, comment: 'Not great'
+        }, { headers: getHeaders() });
+
+        // Verify mathematically expected average (5 + 3 = 8 / 2 = 4)
+        const { data: verifiedProd } = await GET(`/odata/v4/catalog/Products(${prodId})`, { headers: getHeaders() });
+        expect(verifiedProd.averageRating).toBe(4);
     });
 });
