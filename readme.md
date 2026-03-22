@@ -12,10 +12,14 @@ This service allows users to manage suppliers, products, and product reviews. It
 - **Fiori Elements UI**: Annotations provided in `app/annotations.cds` to automatically render Fiori UI previews.
 - **Logging**: Production-ready logging using CAP's built-in `cds.log`.
 - **Unit Testing**: Test suites written using Jest to validate service logic and event handlers.
+- **Production Deployment**: Fully deployed to [SAP BTP Cloud Foundry](https://f9667990trial-dev-supplier-product-management-srv.cfapps.us10-001.hana.ondemand.com/odata/v4/catalog/) using **SAP HANA** for persistent data storage.
 
 ## Prerequisites
 - [Node.js](https://nodejs.org/) (v18 or higher recommended)
 - `npm` (Node Package Manager)
+- [SAP BTP Account](https://account.hanatrial.ondemand.com/) (Trial or Enterprise)
+- [Cloud Foundry CLI](https://github.com/cloudfoundry/cli/releases)
+- [MTA Build Tool (MBT)](https://sap.github.io/cloud-mta-build-tool/)
 
 ## Setup and Installation
 
@@ -40,6 +44,27 @@ To run the automated test suite using Jest:
 ```bash
 npm run test
 ```
+
+## Deployment to SAP BTP
+
+To deploy the application to SAP BTP Cloud Foundry with SAP HANA:
+
+1. **Build the MTA Archive**:
+   Ensure you have configured your `mta.yaml` and `package.json` for HANA.
+   ```bash
+   mbt build
+   ```
+2. **Login to Cloud Foundry**:
+   ```bash
+   cf login
+   # Choose your org and space
+   ```
+3. **Deploy the Archive**:
+   ```bash
+   cf deploy mta_archives/supplier-product-management_1.0.0.mtar
+   ```
+4. **Access the App**:
+   Find the URL with `cf apps` and open it in your browser.
 
 ## Design Decisions & Trade-offs
 - **TypeScript & Service Classes**: Decided to use ES6 classes extending `cds.ApplicationService` for the `CatalogService` implementation to leverage TypeScript's type-safety and object-oriented features.
