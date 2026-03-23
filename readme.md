@@ -14,6 +14,8 @@ This service allows users to manage suppliers, products, and product reviews. It
 - **Unit Testing**: Test suites written using Jest to validate service logic and event handlers.
 - **Production Deployment**: Fully deployed to [SAP BTP Cloud Foundry](https://f9667990trial-dev-supplier-product-management-srv.cfapps.us10-001.hana.ondemand.com/odata/v4/catalog/) using **SAP HANA** for persistent data storage.
 
+  > ⚠️ **Note:** This application is deployed on an **SAP BTP Trial account**. Both the SAP BTP platform services and the SAP HANA database instance are **automatically stopped daily** by SAP and must be **manually restarted** from the SAP BTP Cockpit before the application becomes accessible again.
+
 ## Prerequisites
 - [Node.js](https://nodejs.org/) (v18 or higher recommended)
 - `npm` (Node Package Manager)
